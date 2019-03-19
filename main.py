@@ -4,6 +4,7 @@ import tensorflow as tf
 from keras.preprocessing.sequence import pad_sequences
 from keras.preprocessing.text import Tokenizer
 from neural_network import NeuralNetwork
+from preprocessor import Preprocessor
 import matplotlib.pyplot as plt
 
 def main():
@@ -18,6 +19,10 @@ def main():
 
     trainY = np.where(trainY == 4, 1, trainY)
     testY = np.where(testY == 4, 1, testY)
+
+    preprocessor = Preprocessor()
+
+    trainX, testX = preprocessor.clean_texts(trainX, testX)
 
     tokenizer = Tokenizer()
 
