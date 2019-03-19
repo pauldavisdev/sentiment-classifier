@@ -66,4 +66,4 @@ class Preprocessor:
                 stemmed_word = self.stemmer.stem(word)
                 cleaned_tweet.append(stemmed_word)
         
-        return cleaned_tweet
+        return ' '.join(cleaned_tweet)

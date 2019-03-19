@@ -2,15 +2,17 @@ from csv_handler import read_csv
 import numpy as np
 import tensorflow as tf
 from keras.preprocessing.sequence import pad_sequences
-from keras.preprocessing.text import Tokenizer
+from keras.preprocessing.text import Tokenizer, one_hot
 from neural_network import NeuralNetwork
 from preprocessor import Preprocessor
 import matplotlib.pyplot as plt
 
 def main():
-    num_csv_rows = 100000
+    num_csv_rows = 1000000
 
     max_len = 140
+
+    vocab_size = 20000
 
     train, test = read_csv(num_csv_rows)
 
@@ -28,17 +30,25 @@ def main():
 
     tokenizer.fit_on_texts(trainX)
 
-    encoded_texts = tokenizer.texts_to_sequences(trainX)
+    tokenizer.num_words = vocab_size
+    
+    encoded_train = []
 
-    trainX = pad_sequences(encoded_texts, maxlen=max_len, padding='post')
+    for tweet in trainX:
+        encoded_train.append(one_hot(tweet, vocab_size))
+    
+    #wait = input("PRESS ENTER TO CONTINUE.")
+
+    trainX = pad_sequences(encoded_train, maxlen=max_len, padding='post')
 
     tokenizer.fit_on_texts(testX)
 
-    encoded_texts = tokenizer.texts_to_sequences(testX)
+    encoded_test = []
 
-    testX = pad_sequences(encoded_texts, maxlen=max_len, padding='post')
+    for tweet in testX:
+        encoded_test.append(one_hot(tweet, vocab_size))
 
-    vocab_size = len(tokenizer.word_index) + 1
+    testX = pad_sequences(encoded_test, maxlen=max_len, padding='post')
 
     neural_network = NeuralNetwork()
 

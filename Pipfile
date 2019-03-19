@@ -12,6 +12,7 @@ keras = "*"
 tensorflow = "*"
 matplotlib = "*"
 nltk = "*"
+talos = "*"
 
 [requires]
 python_version = "3.7"
