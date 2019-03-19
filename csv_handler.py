@@ -4,12 +4,13 @@ import time, os
 from shutil import copyfile
 
 def read_csv(num_csv_rows):
-    """ 
-    Reads CSV, shuffles, and returns training and test data.
+    """Reads CSV, shuffles, and returns training and test data.
 
-    :param num_csv_rows: Number of rows to be returned
-    :return train: Specified number of rows of training data
-    :return test: Test data
+    Args:
+        num_csv_rows: Number of training data rows to be returned.
+    Returns:
+        Training data (only num_csv_rows rows) and all test data.
+
     """    
     cols = [0, 5]
 
@@ -24,6 +25,11 @@ def read_csv(num_csv_rows):
     return train[:num_csv_rows], test
 
 def write_csv(df):
+    """Adds timestamp to dataframe, then writes to CSV file.
+    Args:
+        df: Dataframe to write to CSV file.
+        
+    """
     timestamp = int(time.time())
 
     df['timestamp'] = timestamp
