@@ -1,13 +1,15 @@
 import tensorflow as tf
 from tensorflow import keras
+from keras.callbacks import EarlyStopping
 
 class NeuralNetwork:
 
-    num_input = 48
-    num_hidden = 24
+    num_input = 16
+    num_hidden = 14
     num_output = 1
-    epochs = 10
-    batch_size = 128
+    epochs = 20
+    batch_size = 64
+    patience = 4
 
     def generate_model(self, vocab_size):
         self.model = keras.Sequential()
@@ -19,4 +21,18 @@ class NeuralNetwork:
     def fit_model(self, partial_x_train, partial_y_train, x_val, y_val):
         return self.model.fit(partial_x_train, partial_y_train, 
                         epochs=self.epochs, batch_size=self.batch_size, 
-                        validation_data=(x_val, y_val), verbose=1)
+                        validation_data=(x_val, y_val), verbose=1,
+                        callbacks=self.get_callbacks())
+
+    def get_callbacks(self):
+        
+        callback_list = []
+
+        early_stopping = keras.callbacks.EarlyStopping(monitor='val_loss',
+                                    patience=self.patience,
+                                    verbose=1,
+                                    mode='min')
+
+        callback_list.append(early_stopping)
+
+        return callback_list
