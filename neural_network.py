@@ -4,12 +4,12 @@ from keras.callbacks import EarlyStopping
 
 class NeuralNetwork:
 
-    num_input = 100
-    num_hidden = 72
+    num_input = 500
+    num_hidden = 350
     num_output = 1
-    epochs = 2
+    epochs = 50
     batch_size = 64
-    patience = 5
+    patience = 3
 
     def generate_model(self, vocab_size):
         self.model = keras.Sequential()

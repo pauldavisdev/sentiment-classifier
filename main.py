@@ -1,4 +1,4 @@
-from csv_handler import read_csv
+from csv_handler import read_csv, write_csv
 import numpy as np
 import tensorflow as tf
 from keras.preprocessing.sequence import pad_sequences
@@ -8,49 +8,58 @@ from preprocessor import Preprocessor
 import matplotlib.pyplot as plt
 import time, os
 import pandas as pd
+import pickle
 
 def main():
-    num_csv_rows = 100000
+    num_csv_rows = 200000
 
-    max_len = 140
+    max_len = 100
 
-    vocab_size = 1000
+    vocab_size = 20000
 
-    train, test = read_csv(num_csv_rows)
+    # train, test = read_csv(num_csv_rows)
 
-    testX, testY = test['tweet'].values, test['polarity'].values
-    trainX, trainY = train['tweet'].values, train['polarity'].values
+    # testX, testY = test['tweet'].values, test['polarity'].values
+    # trainX, trainY = train['tweet'].values, train['polarity'].values
 
-    trainY = np.where(trainY == 4, 1, trainY)
-    testY = np.where(testY == 4, 1, testY)
+    # trainY = np.where(trainY == 4, 1, trainY)
+    # testY = np.where(testY == 4, 1, testY)
 
-    preprocessor = Preprocessor()
+    # preprocessor = Preprocessor()
 
-    trainX, testX = preprocessor.clean_texts(trainX, testX)
+    # trainX, testX = preprocessor.clean_texts(trainX, testX)
 
-    tokenizer = Tokenizer()
+    # tokenizer = Tokenizer()
 
-    tokenizer.fit_on_texts(trainX)
+    # tokenizer.fit_on_texts(trainX)
 
-    tokenizer.num_words = vocab_size
+    # tokenizer.num_words = vocab_size
     
-    encoded_train = []
+    # encoded_train = []
 
-    for tweet in trainX:
-        encoded_train.append(one_hot(tweet, vocab_size))
+    # for tweet in trainX:
+    #     encoded_train.append(one_hot(tweet, vocab_size))
     
-    #wait = input("PRESS ENTER TO CONTINUE.")
+    # #wait = input("PRESS ENTER TO CONTINUE.")
 
-    trainX = pad_sequences(encoded_train, maxlen=max_len, padding='post')
+    # trainX = pad_sequences(encoded_train, maxlen=max_len, padding='post')
 
-    tokenizer.fit_on_texts(testX)
+    # tokenizer.fit_on_texts(testX)
 
-    encoded_test = []
+    # encoded_test = []
 
-    for tweet in testX:
-        encoded_test.append(one_hot(tweet, vocab_size))
+    # for tweet in testX:
+    #     encoded_test.append(one_hot(tweet, vocab_size))
 
-    testX = pad_sequences(encoded_test, maxlen=max_len, padding='post')
+    # testX = pad_sequences(encoded_test, maxlen=max_len, padding='post')
+
+
+    file = open('test.pkl', 'rb')
+    trainX = pickle.load(file)
+    trainY = pickle.load(file)
+    testX = pickle.load(file)
+    testY = pickle.load(file)
+    file.close()
 
     neural_network = NeuralNetwork()
 
@@ -62,6 +71,13 @@ def main():
             loss='binary_crossentropy',
             metrics=['accuracy'])
 
+    # file = open('test.pkl','wb')
+    # pickle.dump(trainX, file)
+    # pickle.dump(trainY, file)
+    # pickle.dump(testX, file)
+    # pickle.dump(testY, file)
+    # file.close()
+    
     x_val = trainX[:5000]
     partial_x_train = trainX[5000:]
 
@@ -110,8 +126,6 @@ def main():
 
     plt.show()
 
-    timestamp = int(time.time())
-
     df = pd.DataFrame.from_dict(history_dict)
     df['test_loss'] = results[0]
     df['test_acc'] = results[1]
@@ -122,20 +136,8 @@ def main():
     df['batch size'] = neural_network.batch_size
     df['patience'] = neural_network.patience
     df = df.round(decimals=4)
-    df['timestamp'] = timestamp
 
-    print(df)
-
-    log_path = 'logs/log.csv'
-
-    if os.path.exists(log_path):
-        copyfile(log_path, ''.join(['logs/log', '_', str(timestamp), '.csv']))
-        # append to csv
-        with open(log_path, 'a') as f:
-            df.to_csv(f, header=True, index=False)
-    else:
-        # create new csv
-        df.to_csv(path_or_buf=log_path, index=False)
+    write_csv(df)
 
 if __name__ == '__main__':
     main()
