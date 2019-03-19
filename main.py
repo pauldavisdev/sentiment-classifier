@@ -6,13 +6,15 @@ from keras.preprocessing.text import Tokenizer, one_hot
 from neural_network import NeuralNetwork
 from preprocessor import Preprocessor
 import matplotlib.pyplot as plt
+import time, os
+import pandas as pd
 
 def main():
-    num_csv_rows = 1000000
+    num_csv_rows = 100000
 
     max_len = 140
 
-    vocab_size = 20000
+    vocab_size = 1000
 
     train, test = read_csv(num_csv_rows)
 
@@ -107,6 +109,33 @@ def main():
     plt.legend()
 
     plt.show()
+
+    timestamp = int(time.time())
+
+    df = pd.DataFrame.from_dict(history_dict)
+    df['test_loss'] = results[0]
+    df['test_acc'] = results[1]
+    df['input nodes'] = neural_network.num_input
+    df['hidden nodes'] = neural_network.num_hidden
+    df['output nodes'] = neural_network.num_output
+    df['epochs'] = neural_network.epochs
+    df['batch size'] = neural_network.batch_size
+    df['patience'] = neural_network.patience
+    df = df.round(decimals=4)
+    df['timestamp'] = timestamp
+
+    print(df)
+
+    log_path = 'logs/log.csv'
+
+    if os.path.exists(log_path):
+        copyfile(log_path, ''.join(['logs/log', '_', str(timestamp), '.csv']))
+        # append to csv
+        with open(log_path, 'a') as f:
+            df.to_csv(f, header=True, index=False)
+    else:
+        # create new csv
+        df.to_csv(path_or_buf=log_path, index=False)
 
 if __name__ == '__main__':
     main()
