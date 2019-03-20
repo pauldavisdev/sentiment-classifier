@@ -11,7 +11,7 @@ class NeuralNetwork:
     batch_size = 64
     patience = 3
 
-    def generate_model(self, vocab_size):
+    def create_model(self, vocab_size):
         self.model = keras.Sequential()
         self.model.add(keras.layers.Embedding(vocab_size, self.num_input))
         self.model.add(keras.layers.GlobalAveragePooling1D())

@@ -131,7 +131,7 @@ def main():
 
     neural_network = NeuralNetwork()
 
-    neural_network.generate_model(vocab_size)
+    neural_network.create_model(vocab_size)
 
     neural_network.model.summary()
     
