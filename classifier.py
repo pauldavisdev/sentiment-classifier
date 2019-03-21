@@ -92,7 +92,7 @@ def plot_graph(history):
 
     plt.show()
 
-def create_csv_dataframe(history):
+def create_csv_dataframe(history, results, neural_network):
     history_dict = history.history
 
     df = pd.DataFrame.from_dict(history_dict)
@@ -156,7 +156,7 @@ def main():
 
     plot_graph(history)
 
-    write_csv(create_csv_dataframe(history))
+    write_csv(create_csv_dataframe(history, results, neural_network))
 
 if __name__ == '__main__':
     main()
