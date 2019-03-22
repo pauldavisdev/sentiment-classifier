@@ -1,19 +1,20 @@
 import tensorflow as tf
 from tensorflow import keras
-from keras.callbacks import EarlyStopping
+from keras.callbacks import EarlyStopping, ModelCheckpoint
 
 class NeuralNetwork:
 
-    num_input = 500
-    num_hidden = 350
+    num_input = 16
+    num_hidden = 16
     num_output = 1
-    epochs = 50
-    batch_size = 64
-    patience = 3
+    epochs = 3
+    batch_size = 128
+    patience = 5
+    checkpoint_filepath = 'weights.best.hdf5'
 
     def create_model(self, vocab_size):
         self.model = keras.Sequential()
-        self.model.add(keras.layers.Embedding(vocab_size, self.num_input))
+        self.model.add(keras.layers.Embedding(vocab_size, self.num_input, input_length=140))
         self.model.add(keras.layers.GlobalAveragePooling1D())
         self.model.add(keras.layers.Dense(self.num_hidden, activation=tf.nn.relu))
         self.model.add(keras.layers.Dense(self.num_output, activation=tf.nn.sigmoid))
@@ -33,6 +34,13 @@ class NeuralNetwork:
                                     verbose=1,
                                     mode='min')
 
+        checkpoint = keras.callbacks.ModelCheckpoint(self.checkpoint_filepath,
+                                monitor='val_acc',
+                                verbose=1,
+                                save_best_only=True,
+                                mode='max')
+
         callback_list.append(early_stopping)
+        callback_list.append(checkpoint)
 
         return callback_list

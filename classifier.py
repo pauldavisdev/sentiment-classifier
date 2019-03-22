@@ -5,15 +5,15 @@ from keras.preprocessing.sequence import pad_sequences
 from keras.preprocessing.text import Tokenizer, one_hot
 from neural_network import NeuralNetwork
 from preprocessor import Preprocessor
-import matplotlib
-matplotlib.use('agg')
+# import matplotlib
+# matplotlib.use('agg')
 import matplotlib.pyplot as plt
 import time, os
 import pandas as pd
 import pickle
 
 def prepare_data():
-    num_csv_rows = 30000
+    num_csv_rows = 500000
 
     max_len = 140
 
@@ -25,15 +25,15 @@ def prepare_data():
     trainY = np.where(trainY == 4, 1, trainY)
     testY = np.where(testY == 4, 1, testY)
 
-    preprocessor = Preprocessor()
+    # preprocessor = Preprocessor()
 
-    trainX, testX = preprocessor.clean_texts(trainX, testX)
+    # trainX, testX = preprocessor.clean_texts(trainX, testX)
 
     tokenizer = Tokenizer()
 
     tokenizer.fit_on_texts(trainX)
     
-    vocab_size = int(len(tokenizer.word_index) * 0.90) + 1
+    vocab_size = int(len(tokenizer.word_index) * 0.9) + 1
 
     tokenizer.num_words = vocab_size
 
@@ -111,15 +111,15 @@ def create_csv_dataframe(history, results, neural_network):
 
 def main():
     
-    trainX, trainY, testX, testY, vocab_size = prepare_data()
+    # trainX, trainY, testX, testY, vocab_size = prepare_data()
 
-    # file = open('data.pkl', 'rb')
-    # trainX = pickle.load(file)
-    # trainY = pickle.load(file)
-    # testX = pickle.load(file)
-    # testY = pickle.load(file)
-    # vocab_size = pickle.load(file)
-    # file.close()
+    file = open('data.pkl', 'rb')
+    trainX = pickle.load(file)
+    trainY = pickle.load(file)
+    testX = pickle.load(file)
+    testY = pickle.load(file)
+    vocab_size = pickle.load(file)
+    file.close()
 
     # file = open('data.pkl','wb')
     # pickle.dump(trainX, file)
@@ -139,11 +139,11 @@ def main():
             loss='binary_crossentropy',
             metrics=['accuracy'])
    
-    x_val = trainX[:10000]
-    partial_x_train = trainX[10000:]
+    x_val = trainX[:100000]
+    partial_x_train = trainX[100000:]
 
-    y_val = trainY[:10000]
-    partial_y_train = trainY[10000:]
+    y_val = trainY[:100000]
+    partial_y_train = trainY[100000:]
 
     history = neural_network.fit_model(partial_x_train, partial_y_train, 
                                         x_val, y_val)
@@ -159,4 +159,5 @@ def main():
     write_csv(create_csv_dataframe(history, results, neural_network))
 
 if __name__ == '__main__':
-    main()
+    for i in range(1):
+        main()
