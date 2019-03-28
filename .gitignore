@@ -1,6 +1,7 @@
 # my ignored
 .vscode/
 data/
+embedding/
 logs/
 *.pkl
 weights.*

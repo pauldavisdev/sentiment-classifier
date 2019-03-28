@@ -13,7 +13,7 @@ import pandas as pd
 import pickle
 
 def prepare_data():
-    num_csv_rows = 500000
+    num_csv_rows = 1200000
 
     max_len = 140
 
@@ -29,11 +29,30 @@ def prepare_data():
 
     # trainX, testX = preprocessor.clean_texts(trainX, testX)
 
+    empty_tweets = []
+
+    for index, tweet in enumerate(trainX):
+        if len(tweet) == 0:
+            empty_tweets.append(index)
+
+    trainX = np.delete(trainX, empty_tweets)
+    trainY = np.delete(trainY, empty_tweets)
+
+    empty_tweets = []
+
+    for index, tweet in enumerate(testX):
+        if len(tweet) == 0:
+            print(tweet)
+            empty_tweets.append(index)
+
+    testX = np.delete(testX, empty_tweets)
+    testY = np.delete(testY, empty_tweets)
+
     tokenizer = Tokenizer()
 
     tokenizer.fit_on_texts(trainX)
     
-    vocab_size = int(len(tokenizer.word_index) * 0.9) + 1
+    vocab_size = int(len(tokenizer.word_index)) + 1
 
     tokenizer.num_words = vocab_size
 
@@ -53,7 +72,7 @@ def prepare_data():
 
     testX = pad_sequences(encoded_test, maxlen=max_len, padding='post')
 
-    return trainX, trainY, testX, testY, vocab_size
+    return trainX, trainY, testX, testY, vocab_size, max_len
 
 def plot_graph(history):
 
@@ -69,23 +88,25 @@ def plot_graph(history):
     epochs = range(1, len(acc) + 1)
 
     # "bo" is for "blue dot"
-    plt.plot(epochs, loss, 'bo', label='Training loss')
+    plt.grid(b=True, visible=True)
+    plt.subplot(1, 2, 1)
+    plt.plot(epochs, loss, 'b', label='Training Loss', linestyle='--')
     # b is for "solid blue line"
-    plt.plot(epochs, val_loss, 'b', label='Validation loss')
-    plt.title('Training and validation loss')
+    plt.plot(epochs, val_loss, 'b', label='Validation Loss')
+    plt.title('Training and Validation Loss')
     plt.xlabel('Epochs')
     plt.ylabel('Loss')
     plt.legend()
 
-    plt.show()
-
-    plt.clf()   # clear figure
+    #plt.show()
+    plt.subplot(1, 2, 2)
+    #plt.clf()   # clear figure
     acc_values = history_dict['acc']
     val_acc_values = history_dict['val_acc']
 
-    plt.plot(epochs, acc, 'bo', label='Training acc')
-    plt.plot(epochs, val_acc, 'b', label='Validation acc')
-    plt.title('Training and validation accuracy')
+    plt.plot(epochs, acc, 'b', label='Training Accuracy', linestyle='--')
+    plt.plot(epochs, val_acc, 'b', label='Validation Accuracy')
+    plt.title('Training and Validation Accuracy')
     plt.xlabel('Epochs')
     plt.ylabel('Accuracy')
     plt.legend()
@@ -111,7 +132,7 @@ def create_csv_dataframe(history, results, neural_network):
 
 def main():
     
-    # trainX, trainY, testX, testY, vocab_size = prepare_data()
+    # trainX, trainY, testX, testY, vocab_size, max_len = prepare_data()
 
     file = open('data.pkl', 'rb')
     trainX = pickle.load(file)
@@ -119,6 +140,7 @@ def main():
     testX = pickle.load(file)
     testY = pickle.load(file)
     vocab_size = pickle.load(file)
+    max_len = 140
     file.close()
 
     # file = open('data.pkl','wb')
@@ -127,11 +149,12 @@ def main():
     # pickle.dump(testX, file)
     # pickle.dump(testY, file)
     # pickle.dump(vocab_size, file)
+    # pickle.dump(max_len, file)
     # file.close()
 
     neural_network = NeuralNetwork()
 
-    neural_network.create_model(vocab_size)
+    neural_network.create_model(vocab_size, max_len)
 
     neural_network.model.summary()
     
@@ -139,11 +162,11 @@ def main():
             loss='binary_crossentropy',
             metrics=['accuracy'])
    
-    x_val = trainX[:100000]
-    partial_x_train = trainX[100000:]
+    x_val = trainX[:200000]
+    partial_x_train = trainX[200000:]
 
-    y_val = trainY[:100000]
-    partial_y_train = trainY[100000:]
+    y_val = trainY[:200000]
+    partial_y_train = trainY[200000:]
 
     history = neural_network.fit_model(partial_x_train, partial_y_train, 
                                         x_val, y_val)
@@ -154,10 +177,10 @@ def main():
 
     print(results)
 
-    plot_graph(history)
+    #plot_graph(history)
 
     write_csv(create_csv_dataframe(history, results, neural_network))
 
 if __name__ == '__main__':
-    for i in range(1):
+    for i in range(5):
         main()
