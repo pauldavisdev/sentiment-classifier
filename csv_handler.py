@@ -41,7 +41,7 @@ def write_csv(df):
     if os.path.exists(log_path):
         copyfile(log_path, ''.join(['logs/log', '_', str(timestamp), '.csv']))
         # append to csv
-        with open(log_path, 'a') as f:
+        with open(log_path, 'a', newline='') as f:
             df.to_csv(f, header=True, index=False)
     else:
         # create new csv
