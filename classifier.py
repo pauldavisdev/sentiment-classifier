@@ -11,10 +11,12 @@ import matplotlib.pyplot as plt
 import time, os
 import pandas as pd
 import pickle
+from config import CONFIG
 
 def prepare_data():
-    num_csv_rows = 1200000
 
+    num_csv_rows = CONFIG.getint('DEFAULT', 'TRAINING_SIZE')
+    
     max_len = 140
 
     train, test = read_csv(num_csv_rows)
@@ -113,18 +115,18 @@ def plot_graph(history):
 
     plt.show()
 
-def create_csv_dataframe(history, results, neural_network):
+def create_csv_dataframe(history, results):
     history_dict = history.history
 
     df = pd.DataFrame.from_dict(history_dict)
     df['test_loss'] = results[0]
     df['test_acc'] = results[1]
-    df['input nodes'] = neural_network.num_input
-    df['hidden nodes'] = neural_network.num_hidden
-    df['output nodes'] = neural_network.num_output
-    df['epochs'] = neural_network.epochs
-    df['batch size'] = neural_network.batch_size
-    df['patience'] = neural_network.patience
+    df['input nodes'] = CONFIG.getint('DEFAULT', 'EMBEDDING_OUTPUT')
+    df['hidden nodes'] = CONFIG.getint('DEFAULT', 'HIDDEN')
+    df['output nodes'] = CONFIG.getint('DEFAULT', 'OUTPUT')
+    df['epochs'] = CONFIG.getint('DEFAULT', 'EPOCHS')
+    df['batch size'] = CONFIG.getint('DEFAULT', 'BATCH_SIZE')
+    df['patience'] = CONFIG.getint('DEFAULT', 'PATIENCE')
     df = df.round(decimals=4)
 
     return df
@@ -132,16 +134,16 @@ def create_csv_dataframe(history, results, neural_network):
 
 def main():
     
-    # trainX, trainY, testX, testY, vocab_size, max_len = prepare_data()
+    trainX, trainY, testX, testY, vocab_size, max_len = prepare_data()
 
-    file = open('data.pkl', 'rb')
-    trainX = pickle.load(file)
-    trainY = pickle.load(file)
-    testX = pickle.load(file)
-    testY = pickle.load(file)
-    vocab_size = pickle.load(file)
-    max_len = 140
-    file.close()
+    # file = open('data.pkl', 'rb')
+    # trainX = pickle.load(file)
+    # trainY = pickle.load(file)
+    # testX = pickle.load(file)
+    # testY = pickle.load(file)
+    # vocab_size = pickle.load(file)
+    # max_len = 140
+    # file.close()
 
     # file = open('data.pkl','wb')
     # pickle.dump(trainX, file)
@@ -162,11 +164,13 @@ def main():
             loss='binary_crossentropy',
             metrics=['accuracy'])
    
-    x_val = trainX[:200000]
-    partial_x_train = trainX[200000:]
+    val_size = CONFIG.getint('DEFAULT', 'VALIDATION_SIZE')
 
-    y_val = trainY[:200000]
-    partial_y_train = trainY[200000:]
+    x_val = trainX[:val_size]
+    partial_x_train = trainX[val_size:]
+
+    y_val = trainY[:val_size]
+    partial_y_train = trainY[val_size:]
 
     history = neural_network.fit_model(partial_x_train, partial_y_train, 
                                         x_val, y_val)
@@ -179,8 +183,8 @@ def main():
 
     #plot_graph(history)
 
-    write_csv(create_csv_dataframe(history, results, neural_network))
+    write_csv(create_csv_dataframe(history, results))
 
 if __name__ == '__main__':
-    for i in range(5):
+    for i in range(CONFIG.getint('DEFAULT', 'RUNS_PER_EPOCH')):
         main()

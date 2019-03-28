@@ -1,27 +1,23 @@
 import tensorflow as tf
 from tensorflow import keras
 from keras.callbacks import EarlyStopping, ModelCheckpoint
+from config import CONFIG
 
 class NeuralNetwork:
 
-    num_input = 16
-    num_hidden = 16
-    num_output = 1
-    epochs = 4
-    batch_size = 512
-    patience = 5
     checkpoint_filepath = 'weights.best.hdf5'
 
     def create_model(self, vocab_size, max_len):
         self.model = keras.Sequential()
-        self.model.add(keras.layers.Embedding(vocab_size, self.num_input, input_length=max_len))
+        self.model.add(keras.layers.Embedding(vocab_size, CONFIG.getint('DEFAULT', 'EMBEDDING_OUTPUT'), input_length=max_len))
         self.model.add(keras.layers.GlobalAveragePooling1D())
-        self.model.add(keras.layers.Dense(self.num_hidden, activation=tf.nn.relu))
-        self.model.add(keras.layers.Dense(self.num_output, activation=tf.nn.sigmoid))
+        self.model.add(keras.layers.Dense(CONFIG.getint('DEFAULT', 'HIDDEN'), activation=tf.nn.relu))
+        self.model.add(keras.layers.Dense(CONFIG.getint('DEFAULT', 'OUTPUT'), activation=tf.nn.sigmoid))
 
     def fit_model(self, partial_x_train, partial_y_train, x_val, y_val):
         return self.model.fit(partial_x_train, partial_y_train, 
-                        epochs=self.epochs, batch_size=self.batch_size, 
+                        epochs=CONFIG.getint('DEFAULT', 'EPOCHS'), 
+                        batch_size=CONFIG.getint('DEFAULT', 'BATCH_SIZE'), 
                         validation_data=(x_val, y_val), verbose=1,
                         callbacks=self.get_callbacks())
 
@@ -30,7 +26,7 @@ class NeuralNetwork:
         callback_list = []
 
         early_stopping = keras.callbacks.EarlyStopping(monitor='val_loss',
-                                    patience=self.patience,
+                                    patience=CONFIG.getint('DEFAULT', 'PATIENCE'),
                                     verbose=1,
                                     mode='min')
 
