@@ -7,14 +7,14 @@ class NeuralNetwork:
     num_input = 16
     num_hidden = 16
     num_output = 1
-    epochs = 3
-    batch_size = 128
+    epochs = 4
+    batch_size = 512
     patience = 5
     checkpoint_filepath = 'weights.best.hdf5'
 
-    def create_model(self, vocab_size):
+    def create_model(self, vocab_size, max_len):
         self.model = keras.Sequential()
-        self.model.add(keras.layers.Embedding(vocab_size, self.num_input, input_length=140))
+        self.model.add(keras.layers.Embedding(vocab_size, self.num_input, input_length=max_len))
         self.model.add(keras.layers.GlobalAveragePooling1D())
         self.model.add(keras.layers.Dense(self.num_hidden, activation=tf.nn.relu))
         self.model.add(keras.layers.Dense(self.num_output, activation=tf.nn.sigmoid))
