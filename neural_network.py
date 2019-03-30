@@ -10,7 +10,8 @@ class NeuralNetwork:
     def create_model(self, vocab_size, max_len):
         self.model = keras.Sequential()
         self.model.add(keras.layers.Embedding(vocab_size, CONFIG.getint('DEFAULT', 'EMBEDDING_OUTPUT'), input_length=max_len))
-        self.model.add(keras.layers.GlobalAveragePooling1D())
+        #self.model.add(keras.layers.GlobalAveragePooling1D())
+        self.model.add(keras.layers.Flatten())
         self.model.add(keras.layers.Dense(CONFIG.getint('DEFAULT', 'HIDDEN'), activation=tf.nn.relu))
         self.model.add(keras.layers.Dense(CONFIG.getint('DEFAULT', 'OUTPUT'), activation=tf.nn.sigmoid))
 

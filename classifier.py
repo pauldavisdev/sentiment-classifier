@@ -1,6 +1,7 @@
 from csv_handler import read_csv, write_csv
 import numpy as np
 import tensorflow as tf
+from sklearn.model_selection import train_test_split
 from keras.preprocessing.sequence import pad_sequences
 from keras.preprocessing.text import Tokenizer, one_hot
 from neural_network import NeuralNetwork
@@ -50,29 +51,17 @@ def prepare_data():
     testX = np.delete(testX, empty_tweets)
     testY = np.delete(testY, empty_tweets)
 
-    tokenizer = Tokenizer()
+    vocab_size = 30000
+
+    tokenizer = Tokenizer(num_words=vocab_size)
 
     tokenizer.fit_on_texts(trainX)
     
-    vocab_size = int(len(tokenizer.word_index)) + 1
-
-    tokenizer.num_words = vocab_size
-
-    encoded_train = []
-
-    for tweet in trainX:
-        encoded_train.append(one_hot(tweet, vocab_size))
+    trainX = tokenizer.texts_to_sequences(trainX)
     
-    trainX = pad_sequences(encoded_train, maxlen=max_len, padding='post')
+    trainX = pad_sequences(trainX, maxlen=max_len, padding='post')
 
-    tokenizer.fit_on_texts(testX)
-
-    encoded_test = []
-
-    for tweet in testX:
-        encoded_test.append(one_hot(tweet, vocab_size))
-
-    testX = pad_sequences(encoded_test, maxlen=max_len, padding='post')
+    trainX, testX, trainY, testY = train_test_split(trainX, trainY, test_size=0.1)
 
     return trainX, trainY, testX, testY, vocab_size, max_len
 
@@ -136,7 +125,7 @@ def main():
     
     trainX, trainY, testX, testY, vocab_size, max_len = prepare_data()
 
-    # file = open('data.pkl', 'rb')
+    # file = open('data_01_numwords30000.pkl', 'rb')
     # trainX = pickle.load(file)
     # trainY = pickle.load(file)
     # testX = pickle.load(file)
@@ -145,7 +134,7 @@ def main():
     # max_len = 140
     # file.close()
 
-    # file = open('data.pkl','wb')
+    # file = open('data_01_numwords30000.pkl','wb')
     # pickle.dump(trainX, file)
     # pickle.dump(trainY, file)
     # pickle.dump(testX, file)
@@ -153,6 +142,8 @@ def main():
     # pickle.dump(vocab_size, file)
     # pickle.dump(max_len, file)
     # file.close()
+
+    # exit()
 
     neural_network = NeuralNetwork()
 
