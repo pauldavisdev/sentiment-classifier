@@ -18,7 +18,7 @@ def read_csv(num_csv_rows):
 
     print('Reading data:')
 
-    train = shuffle(pd.read_csv('data/stanfordtraindata.csv', header=None, usecols=cols, names=col_names))
+    train = shuffle(pd.read_csv('data/stanfordtraindata.csv', header=None, usecols=cols, names=col_names, encoding='utf-8'))
 
     test = shuffle(pd.read_csv('data/stanfordtestdata.csv', header=None, usecols=cols, names=col_names))
 

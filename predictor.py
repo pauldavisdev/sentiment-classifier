@@ -5,10 +5,13 @@ import tensorflow as tf
 from keras.preprocessing.text import Tokenizer, text_to_word_sequence
 from keras.models import model_from_json
 from keras.preprocessing.sequence import pad_sequences
+from config import CONFIG
+from nltk.corpus import stopwords
+from nltk.stem import PorterStemmer
 
 tf.logging.set_verbosity(tf.logging.ERROR)
 
-tokenizer = Tokenizer(num_words=100000)
+tokenizer = Tokenizer(num_words=CONFIG.getint('DEFAULT', 'VOCAB_SIZE'))
 
 dictionary_file = open('dictionary.json', 'r')
 dictionary = json.load(dictionary_file)
@@ -36,13 +39,20 @@ while True:
         break
 
     words = text_to_word_sequence(user_input)
+
     cleaned_sentence = []
+    
+    stopwords_english = stopwords.words('english')
+
+    stemmer = PorterStemmer()
+
     for word in words:
+        word = stemmer.stem(word)
         if word in dictionary:
-            if dictionary[word] < tokenizer.num_words: 
+            if dictionary[word] < tokenizer.num_words and word not in stopwords_english: 
                 cleaned_sentence.append(dictionary[word])
             else:
-                word = '<UNUSED>'
+                word = '<STOPWORD>'
                 cleaned_sentence.append(dictionary[word])
         else:
             word = '<UNK>'
@@ -57,5 +67,6 @@ while True:
     print(pred)
 
     sentiment = ['negative', 'positive']
+    
     # and print it for the humons
     print("%s sentiment; %f%% confidence" % (sentiment[np.argmax(pred)], pred[0][np.argmax(pred)] * 100))

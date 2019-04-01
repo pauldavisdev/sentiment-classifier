@@ -58,11 +58,12 @@ class Preprocessor:
 
         cleaned_tweet = []
 
-        # for word in tweet_tokens:
-        #     cleaned_tweet.append(word.strip())
+        for word in tweet_tokens:
+            word = self.stemmer.stem(word)
+            cleaned_tweet.append(word)
             # if (word not in self.stopwords_english and
             #     word not in self.emoticons):                
             #     stemmed_word = self.stemmer.stem(word)
             #     cleaned_tweet.append(stemmed_word.strip())        
         # return ' '.join(cleaned_tweet)
-        return ' '.join(tweet_tokens)
+        return ' '.join(cleaned_tweet)

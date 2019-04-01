@@ -15,6 +15,7 @@ import time, os, json
 import pandas as pd
 import pickle
 from config import CONFIG
+from nltk.corpus import stopwords
 
 def prepare_data():
 
@@ -53,20 +54,26 @@ def prepare_data():
     testX = np.delete(testX, empty_tweets)
     testY = np.delete(testY, empty_tweets)
 
-    vocab_size = 100000
+    vocab_size = CONFIG.getint('DEFAULT', 'VOCAB_SIZE')
 
     tokenizer = Tokenizer(num_words=vocab_size, oov_token="<UNUSED>")
 
     tokenizer.fit_on_texts(trainX)
 
     # 0 reserved for padding, 1 reserved for unknown words
-    tokenizer.word_index = { k: (v + 3) for k, v in tokenizer.word_index.items() } 
+    tokenizer.word_index = { k: (v + 2) for k, v in tokenizer.word_index.items() } 
     tokenizer.word_index["<UNK>"] = 1
     tokenizer.word_index["<UNUSED>"] = 2
-    
-    trainX = tokenizer.texts_to_sequences(trainX)
+    tokenizer.word_index["<STOPWORD>"] = 3
 
-    print(trainX)
+    stopwords_english = stopwords.words('english')
+
+    for tweet in trainX:
+        for word in tweet:
+            if word in stopwords_english:
+                word = "<STOPWORD>"
+
+    trainX = tokenizer.texts_to_sequences(trainX)
 
     trainX = pad_sequences(trainX, maxlen=max_len, padding='post')
 
@@ -74,7 +81,7 @@ def prepare_data():
 
     dictionary = tokenizer.word_index
 
-    with open('dictionary.json', 'w') as dictionary_file:
+    with open('dictionary.json', 'w', encoding='utf-8') as dictionary_file:
         json.dump(dictionary, dictionary_file)
     wait = input('dictionary saved')
     return trainX, trainY, testX, testY, vocab_size, max_len
