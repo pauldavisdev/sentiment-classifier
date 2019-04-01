@@ -23,17 +23,15 @@ def prepare_data():
     
     max_len = 140
 
-    train, test = read_csv(num_csv_rows)
+    train = read_csv(num_csv_rows)
 
-    testX, testY = test['tweet'].values, test['polarity'].values
     trainX, trainY = train['tweet'].values, train['polarity'].values
 
     trainY = np.where(trainY == 4, 1, trainY)
-    testY = np.where(testY == 4, 1, testY)
 
     preprocessor = Preprocessor()
 
-    trainX, testX = preprocessor.clean_texts(trainX, testX)
+    trainX = preprocessor.clean_texts(trainX)
 
     empty_tweets = []
 
@@ -44,16 +42,6 @@ def prepare_data():
     trainX = np.delete(trainX, empty_tweets)
     trainY = np.delete(trainY, empty_tweets)
 
-    empty_tweets = []
-
-    for index, tweet in enumerate(testX):
-        if len(tweet) == 0:
-            print(tweet)
-            empty_tweets.append(index)
-
-    testX = np.delete(testX, empty_tweets)
-    testY = np.delete(testY, empty_tweets)
-
     vocab_size = CONFIG.getint('DEFAULT', 'VOCAB_SIZE')
 
     tokenizer = Tokenizer(num_words=vocab_size, oov_token="<UNUSED>")
@@ -61,13 +49,14 @@ def prepare_data():
     tokenizer.fit_on_texts(trainX)
 
     # 0 reserved for padding, 1 reserved for unknown words
+    # 2 reserved for unused words (least frequent), 3 reserved for stopwords
     tokenizer.word_index = { k: (v + 2) for k, v in tokenizer.word_index.items() } 
     tokenizer.word_index["<UNK>"] = 1
     tokenizer.word_index["<UNUSED>"] = 2
     tokenizer.word_index["<STOPWORD>"] = 3
 
     stopwords_english = stopwords.words('english')
-
+    
     for tweet in trainX:
         for word in tweet:
             if word in stopwords_english:
@@ -77,14 +66,12 @@ def prepare_data():
 
     trainX = pad_sequences(trainX, maxlen=max_len, padding='post')
 
-    trainX, testX, trainY, testY = train_test_split(trainX, trainY, test_size=0.1)
-
     dictionary = tokenizer.word_index
 
     with open('dictionary.json', 'w', encoding='utf-8') as dictionary_file:
         json.dump(dictionary, dictionary_file)
-    wait = input('dictionary saved')
-    return trainX, trainY, testX, testY, vocab_size, max_len
+    
+    return trainX, trainY, vocab_size, max_len
 
 def plot_graph(history):
 
@@ -144,7 +131,10 @@ def create_csv_dataframe(history, results):
 
 def main():
     
-    trainX, trainY, testX, testY, vocab_size, max_len = prepare_data()
+    trainX, trainY, vocab_size, max_len = prepare_data()
+
+    # split training data up into training and test sets
+    trainX, testX, trainY, testY = train_test_split(trainX, trainY, test_size=0.1)
 
     # file = open('data_01_numwords30000.pkl', 'rb')
     # trainX = pickle.load(file)

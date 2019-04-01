@@ -9,29 +9,14 @@ class Preprocessor:
 
     stopwords_english = stopwords.words('english')
 
-    emoticons = [
-    ':-)', ':)', ';)', ':o)', ':]', ':3', ':c)', ':>', '=]', '8)', '=)', ':}',
-    ':^)', ':-D', ':D', '8-D', '8D', 'x-D', 'xD', 'X-D', 'XD', '=-D', '=D',
-    '=-3', '=3', ':-))', ":'-)", ":')", ':*', ':^*', '>:P', ':-P', ':P', 'X-P',
-    'x-p', 'xp', 'XP', ':-p', ':p', '=p', ':-b', ':b', '>:)', '>;)', '>:-)',
-    '<3', ':L', ':-/', '>:/', ':S', '>:[', ':@', ':-(', ':[', ':-||', '=L', ':<',
-    ':-[', ':-<', '=\\', '=/', '>:(', ':(', '>.<', ":'-(", ":'(", ':\\', ':-c',
-    ':c', ':{', '>:\\', ';('
-    ]
-
-    def clean_texts(self, trainX, testX):
+    def clean_texts(self, trainX):
         
         trainX_cleaned = []
-        
-        testX_cleaned = []
 
         for text in trainX:
             trainX_cleaned.append(self.clean_tweet(text))
 
-        for text in testX:
-            testX_cleaned.append(self.clean_tweet(text))
-
-        return trainX_cleaned, testX_cleaned
+        return trainX_cleaned
 
     def clean_tweet(self, tweet):
 
@@ -51,19 +36,15 @@ class Preprocessor:
         # remove numbers
         tweet = re.sub(r'\d+', '', tweet)
 
-        # tokenize tweets
+        # remove usernames and set all to lowercase
+        # reduce length of 4 or more consecutive characters in a word to 3
         tokenizer = TweetTokenizer(preserve_case=False, strip_handles=True, reduce_len=True)
 
         tweet_tokens = tokenizer.tokenize(tweet)
 
-        cleaned_tweet = []
+        stemmed_tweet = []
 
         for word in tweet_tokens:
             word = self.stemmer.stem(word)
-            cleaned_tweet.append(word)
-            # if (word not in self.stopwords_english and
-            #     word not in self.emoticons):                
-            #     stemmed_word = self.stemmer.stem(word)
-            #     cleaned_tweet.append(stemmed_word.strip())        
-        # return ' '.join(cleaned_tweet)
-        return ' '.join(cleaned_tweet)
+            stemmed_tweet.append(word)
+        return ' '.join(stemmed_tweet)

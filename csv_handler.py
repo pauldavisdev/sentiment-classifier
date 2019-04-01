@@ -4,12 +4,12 @@ import time, os
 from shutil import copyfile
 
 def read_csv(num_csv_rows):
-    """Reads CSV, shuffles, and returns training and test data.
+    """Reads CSV, shuffles, and returns training data.
 
     Args:
         num_csv_rows: Number of training data rows to be returned.
     Returns:
-        Training data (only num_csv_rows rows) and all test data.
+        Training data (only num_csv_rows rows).
 
     """    
     cols = [0, 5]
@@ -20,9 +20,7 @@ def read_csv(num_csv_rows):
 
     train = shuffle(pd.read_csv('data/stanfordtraindata.csv', header=None, usecols=cols, names=col_names, encoding='utf-8'))
 
-    test = shuffle(pd.read_csv('data/stanfordtestdata.csv', header=None, usecols=cols, names=col_names))
-
-    return train[:num_csv_rows], test
+    return train[:num_csv_rows]
 
 def write_csv(df):
     """Adds timestamp to dataframe, then writes to CSV file.
