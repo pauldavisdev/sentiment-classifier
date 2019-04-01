@@ -4,12 +4,14 @@ import tensorflow as tf
 from sklearn.model_selection import train_test_split
 from keras.preprocessing.sequence import pad_sequences
 from keras.preprocessing.text import Tokenizer, one_hot
+from keras.utils import to_categorical
 from neural_network import NeuralNetwork
 from preprocessor import Preprocessor
+from keras import optimizers
 # import matplotlib
 # matplotlib.use('agg')
 import matplotlib.pyplot as plt
-import time, os
+import time, os, json
 import pandas as pd
 import pickle
 from config import CONFIG
@@ -28,9 +30,9 @@ def prepare_data():
     trainY = np.where(trainY == 4, 1, trainY)
     testY = np.where(testY == 4, 1, testY)
 
-    # preprocessor = Preprocessor()
+    preprocessor = Preprocessor()
 
-    # trainX, testX = preprocessor.clean_texts(trainX, testX)
+    trainX, testX = preprocessor.clean_texts(trainX, testX)
 
     empty_tweets = []
 
@@ -51,18 +53,30 @@ def prepare_data():
     testX = np.delete(testX, empty_tweets)
     testY = np.delete(testY, empty_tweets)
 
-    vocab_size = 30000
+    vocab_size = 100000
 
-    tokenizer = Tokenizer(num_words=vocab_size)
+    tokenizer = Tokenizer(num_words=vocab_size, oov_token="<UNUSED>")
 
     tokenizer.fit_on_texts(trainX)
+
+    # 0 reserved for padding, 1 reserved for unknown words
+    tokenizer.word_index = { k: (v + 3) for k, v in tokenizer.word_index.items() } 
+    tokenizer.word_index["<UNK>"] = 1
+    tokenizer.word_index["<UNUSED>"] = 2
     
     trainX = tokenizer.texts_to_sequences(trainX)
-    
+
+    print(trainX)
+
     trainX = pad_sequences(trainX, maxlen=max_len, padding='post')
 
     trainX, testX, trainY, testY = train_test_split(trainX, trainY, test_size=0.1)
 
+    dictionary = tokenizer.word_index
+
+    with open('dictionary.json', 'w') as dictionary_file:
+        json.dump(dictionary, dictionary_file)
+    wait = input('dictionary saved')
     return trainX, trainY, testX, testY, vocab_size, max_len
 
 def plot_graph(history):
@@ -145,16 +159,22 @@ def main():
 
     # exit()
 
+    trainY = to_categorical(trainY)
+
+    testY = to_categorical(testY)
+
     neural_network = NeuralNetwork()
 
     neural_network.create_model(vocab_size, max_len)
 
     neural_network.model.summary()
     
-    neural_network.model.compile(optimizer=tf.train.AdamOptimizer(),
-            loss='binary_crossentropy',
+    neural_network.model.compile(optimizer='adam',
+            loss='categorical_crossentropy',
             metrics=['accuracy'])
    
+    neural_network.model.save('model.h5')
+
     val_size = CONFIG.getint('DEFAULT', 'VALIDATION_SIZE')
 
     x_val = trainX[:val_size]
@@ -171,6 +191,12 @@ def main():
     print(neural_network.model.metrics_names)
 
     print(results)
+
+    model_json = neural_network.model.to_json()
+    with open('model.json', 'w') as json_file:
+        json_file.write(model_json)
+
+    neural_network.model.save_weights('model.h5')
 
     #plot_graph(history)
 

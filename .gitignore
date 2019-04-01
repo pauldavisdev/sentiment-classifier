@@ -5,6 +5,8 @@ embedding/
 logs/
 *.pkl
 weights.*
+*.json
+*.h5
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
