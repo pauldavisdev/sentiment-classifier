@@ -16,6 +16,8 @@ class NeuralNetwork:
         self.model.add(keras.layers.Dropout(0.5))
         self.model.add(keras.layers.Dense(CONFIG.getint('DEFAULT', 'HIDDEN'), activation=tf.nn.relu))
         self.model.add(keras.layers.Dropout(0.5))
+        # self.model.add(keras.layers.Dense(32, activation=tf.nn.relu))
+        # self.model.add(keras.layers.Dropout(0.5))
         self.model.add(keras.layers.Dense(CONFIG.getint('DEFAULT', 'OUTPUT'), activation=tf.nn.softmax))
 
     def fit_model(self, partial_x_train, partial_y_train, x_val, y_val):

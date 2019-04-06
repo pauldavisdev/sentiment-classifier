@@ -13,7 +13,7 @@ tf.logging.set_verbosity(tf.logging.ERROR)
 
 tokenizer = Tokenizer(num_words=CONFIG.getint('DEFAULT', 'VOCAB_SIZE'))
 
-dictionary_file = open('dictionary.json', 'r')
+dictionary_file = open('dictionary.json', 'r', encoding='utf-8')
 dictionary = json.load(dictionary_file)
 dictionary_file.close()
 
@@ -47,13 +47,10 @@ while True:
     stemmer = PorterStemmer()
 
     for word in words:
-        word = stemmer.stem(word)
-        if word in dictionary:
-            if dictionary[word] < tokenizer.num_words and word not in stopwords_english: 
-                cleaned_sentence.append(dictionary[word])
-            else:
-                word = '<STOPWORD>'
-                cleaned_sentence.append(dictionary[word])
+        #word = stemmer.stem(word)
+        if word in dictionary and dictionary[word] < CONFIG.getint('DEFAULT', 'VOCAB_SIZE'):
+            print('HELLO')
+            cleaned_sentence.append(dictionary[word])
         else:
             word = '<UNK>'
             cleaned_sentence.append(dictionary[word])

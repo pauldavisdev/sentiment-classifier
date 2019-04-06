@@ -45,6 +45,6 @@ class Preprocessor:
         stemmed_tweet = []
 
         for word in tweet_tokens:
-            word = self.stemmer.stem(word)
+            #word = self.stemmer.stem(word)
             stemmed_tweet.append(word)
         return ' '.join(stemmed_tweet)
