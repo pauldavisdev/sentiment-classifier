@@ -35,22 +35,27 @@ def prepare_data():
 
     vocab_size = CONFIG.getint('DEFAULT', 'VOCAB_SIZE')
 
+    # set number of most frequent words to consider and specify token to be used for any word outside of this number
     tokenizer = Tokenizer(num_words=vocab_size, oov_token="<UNUSED>")
 
     tokenizer.fit_on_texts(trainX)
 
     # 0 reserved for padding, 1 reserved for unknown words
-    # 2 reserved for unused words (least frequent), 3 reserved for stopwords
-    tokenizer.word_index = { k: (v + 1) for k, v in tokenizer.word_index.items() } 
+    # 2 reserved for unused words (least frequent)
+    tokenizer.word_index = { k: (v + 2) for k, v in tokenizer.word_index.items() } 
     tokenizer.word_index["<UNK>"] = 1
     tokenizer.word_index["<UNUSED>"] = 2
 
+    # encode training data as integers
     trainX = tokenizer.texts_to_sequences(trainX)
 
+    # pad with 0's to max_len
     trainX = pad_sequences(trainX, maxlen=max_len, padding='post')
 
+    # create dictionary from tokenizer
     dictionary = tokenizer.word_index
 
+    # save dictionary as json file to be used by predictor.py
     with open('dictionary.json', 'w', encoding='utf-8') as dictionary_file:
         json.dump(dictionary, dictionary_file, ensure_ascii=False)
     
@@ -114,21 +119,23 @@ def create_csv_dataframe(history, results):
 
 def main():
     
-    trainX, trainY, vocab_size, max_len = prepare_data()
+    #trainX, trainY, vocab_size, max_len = prepare_data()
 
     # split training data up into training and test sets
-    trainX, testX, trainY, testY = train_test_split(trainX, trainY, test_size=0.1)
+    #trainX, testX, trainY, testY = train_test_split(trainX, trainY, test_size=0.1)
 
-    # file = open('data_01_numwords30000.pkl', 'rb')
-    # trainX = pickle.load(file)
-    # trainY = pickle.load(file)
-    # testX = pickle.load(file)
-    # testY = pickle.load(file)
-    # vocab_size = pickle.load(file)
-    # max_len = 140
-    # file.close()
+    # load Python data object (pkl file)
+    file = open('data_01.pkl', 'rb')
+    trainX = pickle.load(file)
+    trainY = pickle.load(file)
+    testX = pickle.load(file)
+    testY = pickle.load(file)
+    vocab_size = pickle.load(file)
+    max_len = 140
+    file.close()
 
-    # file = open('data_01_numwords30000.pkl','wb')
+    # save training, testing, vocabulary size, and max length of tweet to Python data object (pkl file)
+    # file = open('data_01.pkl','wb')
     # pickle.dump(trainX, file)
     # pickle.dump(trainY, file)
     # pickle.dump(testX, file)
@@ -139,49 +146,61 @@ def main():
 
     # exit()
 
+    # one-hot encode labels
     trainY = to_categorical(trainY)
 
     testY = to_categorical(testY)
 
+    # initialise and create neural network model
     neural_network = NeuralNetwork()
 
     neural_network.create_model(vocab_size, max_len)
 
+    # print neural network details to console
     neural_network.model.summary()
     
+    # compile neural network
     neural_network.model.compile(optimizer='adam',
             loss='categorical_crossentropy',
             metrics=['accuracy'])
    
+    # save model architecture
     neural_network.model.save('model.h5')
 
     val_size = CONFIG.getint('DEFAULT', 'VALIDATION_SIZE')
 
+    # split training data
     x_val = trainX[:val_size]
     partial_x_train = trainX[val_size:]
 
     y_val = trainY[:val_size]
     partial_y_train = trainY[val_size:]
 
+    # fit model
     history = neural_network.fit_model(partial_x_train, partial_y_train, 
                                         x_val, y_val)
 
+    # run complete model on test data set and print results
     results = neural_network.model.evaluate(testX, testY)
 
     print(neural_network.model.metrics_names)
 
     print(results)
 
+    # save model as json file
     model_json = neural_network.model.to_json()
     with open('model.json', 'w') as json_file:
         json_file.write(model_json)
 
+    # save model weights
     neural_network.model.save_weights('model.h5')
 
     #plot_graph(history)
 
+    # write results to CSV file in logs dir
     write_csv(create_csv_dataframe(history, results))
 
+# program entry point
 if __name__ == '__main__':
     for i in range(CONFIG.getint('DEFAULT', 'RUNS_PER_EPOCH')):
         main()

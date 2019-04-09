@@ -20,17 +20,16 @@ class Preprocessor:
 
     def clean_tweet(self, tweet):
 
-        # remove stock market tickers like $GE
+        # remove stock market refs
         tweet = re.sub(r'\$\w*', '', tweet)
     
-        # remove old style retweet text "RT"
+        # remove retweet text "RT"
         tweet = re.sub(r'^RT[\s]+', '', tweet)
     
         # remove hyperlinks
         tweet = re.sub(r'https?:\/\/.*[\r\n]*', '', tweet)
         
         # remove hashtags
-        # only removing the hash # sign from the word
         tweet = re.sub(r'#', '', tweet)
 
         # remove numbers
@@ -42,9 +41,10 @@ class Preprocessor:
 
         tweet_tokens = tokenizer.tokenize(tweet)
 
-        stemmed_tweet = []
+        # stemmed_tweet = []
 
-        for word in tweet_tokens:
-            #word = self.stemmer.stem(word)
-            stemmed_tweet.append(word)
-        return ' '.join(stemmed_tweet)
+        # for word in tweet_tokens:
+        #     if word not in self.stopwords_english:
+        #         word = self.stemmer.stem(word)
+        #         stemmed_tweet.append(word)
+        return ' '.join(tweet_tokens)
