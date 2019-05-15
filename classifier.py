@@ -8,8 +8,6 @@ from keras.utils import to_categorical
 from neural_network import NeuralNetwork
 from preprocessor import Preprocessor
 from keras import optimizers
-# import matplotlib
-# matplotlib.use('agg')
 import matplotlib.pyplot as plt
 import time, os, json
 import pandas as pd
@@ -42,7 +40,7 @@ def prepare_data():
 
     # 0 reserved for padding, 1 reserved for unknown words
     # 2 reserved for unused words (least frequent)
-    tokenizer.word_index = { k: (v + 2) for k, v in tokenizer.word_index.items() } 
+    tokenizer.word_index = { k: (v + 1) for k, v in tokenizer.word_index.items() } 
     tokenizer.word_index["<UNK>"] = 1
     tokenizer.word_index["<UNUSED>"] = 2
 
@@ -119,13 +117,13 @@ def create_csv_dataframe(history, results):
 
 def main():
     
-    #trainX, trainY, vocab_size, max_len = prepare_data()
+    # trainX, trainY, vocab_size, max_len = prepare_data()
 
     # split training data up into training and test sets
-    #trainX, testX, trainY, testY = train_test_split(trainX, trainY, test_size=0.1)
+    # trainX, testX, trainY, testY = train_test_split(trainX, trainY, test_size=0.1)
 
     # load Python data object (pkl file)
-    file = open('data_01.pkl', 'rb')
+    file = open('data.pkl', 'rb')
     trainX = pickle.load(file)
     trainY = pickle.load(file)
     testX = pickle.load(file)
@@ -134,8 +132,8 @@ def main():
     max_len = 140
     file.close()
 
-    # save training, testing, vocabulary size, and max length of tweet to Python data object (pkl file)
-    # file = open('data_01.pkl','wb')
+    # # save training, testing, vocabulary size, and max length of tweet to Python data object (pkl file)
+    # file = open('data.pkl','wb')
     # pickle.dump(trainX, file)
     # pickle.dump(trainY, file)
     # pickle.dump(testX, file)

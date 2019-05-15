@@ -1,4 +1,4 @@
-import json
+import json, os
 import numpy as np
 import keras
 import tensorflow as tf
@@ -9,6 +9,7 @@ from config import CONFIG
 
 # disable tensorflow logging depreciation errors to console
 tf.logging.set_verbosity(tf.logging.ERROR)
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 tokenizer = Tokenizer(num_words=CONFIG.getint('DEFAULT', 'VOCAB_SIZE'))
 
@@ -36,7 +37,7 @@ model = tf.keras.models.model_from_json(loaded_model_json)
 model.load_weights('model.h5')
 
 while True:
-    user_input = input('Input a sentence to be evaluated, or Enter to quit: ')
+    user_input = input('Enter a tweet to be evaluated, or press \'Enter\' to quit: ')
 
     if len(user_input) == 0:
         break
@@ -44,25 +45,30 @@ while True:
     words = text_to_word_sequence(user_input)
 
     cleaned_sentence = []
+
+    cleaned_sentence_to_int = []
     
     # encode user input sentence as integer values according to tokenizer
     for word in words:
         if word in dictionary and dictionary[word] < CONFIG.getint('DEFAULT', 'VOCAB_SIZE'):
-            print('HELLO')
-            cleaned_sentence.append(dictionary[word])
+            cleaned_sentence.append(word)
+            cleaned_sentence_to_int.append(dictionary[word])
         else:
             word = '<UNK>'
-            cleaned_sentence.append(dictionary[word])
+            cleaned_sentence_to_int.append(dictionary[word])
 
-    print(cleaned_sentence)
+    print('\nCleaned sentence:', cleaned_sentence)
 
-    cleaned_sentence = pad_sequences([cleaned_sentence], maxlen=140, padding='post')
+    print('\nCleaned sentence to integer:', cleaned_sentence_to_int)
+
+    cleaned_sentence_to_int = pad_sequences([cleaned_sentence_to_int], maxlen=140, padding='post')
 
     # predict sentiment of sentence
-    pred = model.predict(cleaned_sentence)
-    print(pred)
+    pred = model.predict(cleaned_sentence_to_int)
 
-    sentiment = ['negative', 'positive']
+    print('\nNeg:', pred[0][0], 'Pos:', pred[0][1])
+
+    sentiment = ['Negative', 'Positive']
     
     # print sentence sentiment and confidence
-    print("%s sentiment; %f%% confidence" % (sentiment[np.argmax(pred)], pred[0][np.argmax(pred)] * 100))
+    print(f'\n{sentiment[np.argmax(pred)]} sentiment : {pred[0][np.argmax(pred)] * 100}% confidence \n')

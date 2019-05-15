@@ -12,14 +12,14 @@ class NeuralNetwork:
     def create_model(self, vocab_size, max_len):
 
         # # load saved model architecture
-        # json_file = open('model.json', 'r')
+        # json_file = open('model.conv1d.json', 'r')
         # loaded_model_json = json_file.read()
         # json_file.close()
 
         # loaded_model = tf.keras.models.model_from_json(loaded_model_json)
 
         # # load saved model weights
-        # loaded_model.load_weights('model.h5')
+        # loaded_model.load_weights('model.conv1d.h5')
 
         # embedding_layer = loaded_model.layers[0]
 
@@ -29,13 +29,14 @@ class NeuralNetwork:
         self.model.add(keras.layers.Embedding(vocab_size, CONFIG.getint('DEFAULT', 'EMBEDDING_OUTPUT'), 
         input_length=max_len))
         #self.model.add(embedding_layer)
+        self.model.add(keras.layers.Conv1D(64, 3, activation='relu'))
         self.model.add(keras.layers.GlobalAveragePooling1D())
         #self.model.add(keras.layers.Flatten())
         #self.model.add(keras.layers.Dropout(0.5))
         self.model.add(keras.layers.Dense(CONFIG.getint('DEFAULT', 'HIDDEN'), activation=tf.nn.relu))
         #self.model.add(keras.layers.Dropout(0.5))
         # self.model.add(keras.layers.Dense(32, activation=tf.nn.relu))
-        # self.model.add(keras.layers.Dropout(0.5))
+        self.model.add(keras.layers.Dropout(0.5))
         self.model.add(keras.layers.Dense(CONFIG.getint('DEFAULT', 'OUTPUT'), activation=tf.nn.softmax))
 
     def fit_model(self, partial_x_train, partial_y_train, x_val, y_val):

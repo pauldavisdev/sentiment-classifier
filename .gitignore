@@ -1,12 +1,14 @@
 # my ignored
 .vscode/
-data/
+data/model.*
+data/*test*
 embedding/
-logs/
-*.pkl
-weights.*
-*.json
-*.h5
+/*.pkl
+/data/*.csv
+/weights.*
+/*.json
+/*.h5
+/logs/*_*.csv
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
